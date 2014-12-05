@@ -14,8 +14,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Roslyn;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// A type that uses Roslyn to compile C# content.
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationEnvironment _environment;
         private readonly IAssemblyLoadContext _loader;
+        private readonly ICompilationOptionsProvider _optionsProvider;
 
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
 
@@ -44,27 +46,34 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public RoslynCompilationService(IApplicationEnvironment environment,
                                         IAssemblyLoadContextAccessor loaderAccessor,
                                         ILibraryManager libraryManager,
+                                        ICompilationOptionsProvider optionsProvider,
                                         IMvcRazorHost host)
         {
             _environment = environment;
             _loader = loaderAccessor.GetLoadContext(typeof(RoslynCompilationService).GetTypeInfo().Assembly);
             _libraryManager = libraryManager;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
+            _optionsProvider = optionsProvider;
             _classPrefix = host.MainClassNamePrefix;
         }
 
         /// <inheritdoc />
         public CompilationResult Compile(IFileInfo fileInfo, string compilationContent)
         {
-            var syntaxTrees = new[] { SyntaxTreeGenerator.Generate(compilationContent, fileInfo.PhysicalPath) };
-
+            var projectPath = _environment.ApplicationBasePath;
+            var compilationSettings = GetCompilationSettings(_environment, _optionsProvider);
+            var syntaxTree = SyntaxTreeGenerator.Generate(compilationContent,
+                                                          fileInfo.PhysicalPath,
+                                                          compilationSettings);
             var references = _applicationReferences.Value;
 
             var assemblyName = Path.GetRandomFileName();
-
+            var compilationOptions = compilationSettings.CompilationOptions
+                                                        .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
+                                                        
             var compilation = CSharpCompilation.Create(assemblyName,
-                        options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                        syntaxTrees: syntaxTrees,
+                        options: compilationOptions,
+                        syntaxTrees: new[] { syntaxTree },
                         references: references);
 
             using (var ms = new MemoryStream())
@@ -114,6 +123,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     return UncachedCompilationResult.Successful(type);
                 }
             }
+        }
+
+        public static CompilationSettings GetCompilationSettings(
+            [NotNull] IApplicationEnvironment applicationEnvironment,
+            [NotNull] ICompilationOptionsProvider compilationOptionsProvider)
+        {
+            return compilationOptionsProvider.GetCompilerOptions(applicationEnvironment.ApplicationBasePath,
+                                                                 applicationEnvironment.RuntimeFramework,
+                                                                 applicationEnvironment.Configuration)
+                                             .ToCompilationSettings(applicationEnvironment.RuntimeFramework);
         }
 
         private List<MetadataReference> GetApplicationReferences()
