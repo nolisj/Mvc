@@ -4,18 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using ViewComponentWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ViewComponentTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("ViewComponentWebSite");
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-
         public static IEnumerable<object[]> ViewViewComponents_AreRenderedCorrectlyData
         {
             get
@@ -42,8 +36,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [MemberData(nameof(ViewViewComponents_AreRenderedCorrectlyData))]
         public async Task ViewViewComponents_AreRenderedCorrectly(string actionName, string expected)
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ViewComponentWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/Home/" + actionName);
@@ -55,8 +49,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ViewComponents_SupportsValueType()
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ViewComponentWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/Home/ViewWithIntegerViewComponent");
@@ -70,8 +64,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("ViewComponentWebSite.Namespace2.SameName")]
         public async Task ViewComponents_FullName(string name)
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ViewComponentWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/FullName/Invoke?name=" + name);
@@ -83,8 +77,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ViewComponents_ShortNameUsedForViewLookup()
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ViewComponentWebSite));
+            var client = site.CreateClient();
 
             var name = "ViewComponentWebSite.Integer";
 

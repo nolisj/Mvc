@@ -4,18 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using RazorWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ViewEngineTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("RazorWebSite");
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-
         public static IEnumerable<object[]> RazorView_ExecutesPageAndLayoutData
         {
             get
@@ -62,8 +56,8 @@ ViewWithNestedLayout-Content
         [MemberData(nameof(RazorView_ExecutesPageAndLayoutData))]
         public async Task RazorView_ExecutesPageAndLayout(string actionName, string expected)
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/ViewEngine/" + actionName);
@@ -83,8 +77,8 @@ ViewWithNestedLayout-Content
                                        "",
                                        "</partial2>",
                                        "test-value");
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/ViewEngine/ViewWithPartial");
@@ -101,8 +95,8 @@ ViewWithNestedLayout-Content
 
 partial-content
 component-content";
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/ViewEngine/ViewPassesViewDataToLayout");
@@ -137,8 +131,8 @@ component-content";
         public async Task RazorViewEngine_UsesViewExpandersForViewsAndPartials(string value, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/TemplateExpander?language-expander-value=" +
@@ -187,8 +181,8 @@ component-content";
         public async Task PartialRazorViews_DoNotRenderLayout(string actionName, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/PartialViewEngine/" + actionName);
@@ -206,8 +200,8 @@ component-content";
                                        "",
                                        "~/Views/NestedViewStarts/NestedViewStarts/Layout.cshtml",
                                        "index-content");
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/NestedViewStarts");
@@ -242,8 +236,8 @@ View With Layout
         public async Task RazorViewEngine_UsesExpandersForLayouts(string value, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/TemplateExpander/ViewWithLayout?language-expander-value=" +
@@ -263,8 +257,8 @@ View With Layout
             var expected = 
 @"<view-start>Hello Controller-Person</view-start>
 <page>Hello Controller-Person</page>";
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
             var target = "http://localhost/NestedViewStarts/NestedViewStartUsingParentDirectives";
 
             // Act

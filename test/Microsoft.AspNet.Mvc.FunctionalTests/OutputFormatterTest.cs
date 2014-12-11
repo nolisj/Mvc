@@ -1,32 +1,26 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using ConnegWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class OutputFormatterTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(ConnegWebSite));
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-
         [Theory]
         [InlineData("ReturnTaskOfString")]
         [InlineData("ReturnTaskOfObject_StringValue")]
+
         [InlineData("ReturnString")]
         [InlineData("ReturnObject_StringValue")]
         public async Task TextPlainFormatter_ForStringValues_GetsSelectedReturnsTextPlainContentType(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("text/plain;charset=utf-8");
             var expectedBody = actionName;
 
@@ -45,8 +39,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonOutputFormatter_ForNonStringValue_GetsSelected(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
 
             // Act
@@ -62,8 +56,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoContentFormatter_ForVoidAndTaskReturnType_GetsSelectedAndWritesResponse(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/NoContent/" + actionName);
@@ -84,8 +78,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoContentFormatter_ForNullValue_ByDefault_GetsSelectedAndWritesResponse(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/NoContent/" + actionName);
@@ -107,8 +101,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             NoContentFormatter_ForNullValue_AndTreatNullAsNoContentFlagSetToFalse_DoesNotGetSelected(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/NoContentDoNotTreatNullValueAsNoContent/" +

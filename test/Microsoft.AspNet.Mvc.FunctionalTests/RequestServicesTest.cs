@@ -5,8 +5,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -15,9 +13,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     // PER-REQUEST and does not linger around to impact the next request.
     public class RequestServicesTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(RequestServicesWebSite));
-        private readonly Action<IApplicationBuilder> _app = new RequestServicesWebSite.Startup().Configure;
-
         [Theory]
         [InlineData("http://localhost/RequestScoped/FromController")]
         [InlineData("http://localhost/Other/FromFilter")]
@@ -28,8 +23,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices(string url)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RequestServicesWebSite));
+            var client = site.CreateClient();
 
             // Act & Assert
             for (var i = 0; i < 2; i++)
@@ -49,8 +44,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_TagHelper()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RequestServicesWebSite));
+            var client = site.CreateClient();
 
             var url = "http://localhost/Other/FromTagHelper";
 
@@ -74,8 +69,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_ActionConstraint()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RequestServicesWebSite));
+            var client = site.CreateClient();
 
             var url = "http://localhost/Other/FromActionConstraint";
 

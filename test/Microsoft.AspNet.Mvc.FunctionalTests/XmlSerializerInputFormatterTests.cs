@@ -6,23 +6,18 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class XmlSerializerInputFormatterTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("XmlSerializerWebSite");
-        private readonly Action<IApplicationBuilder> _app = new XmlSerializerWebSite.Startup().Configure;
-
         [Fact]
         public async Task CheckIfXmlSerializerInputFormatterIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(XmlSerializerWebSite));
+            var client = site.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>"
@@ -41,8 +36,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerFormatter_ThrowsOnIncorrectInputNamespace()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(XmlSerializerWebSite));
+            var client = site.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClas xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +

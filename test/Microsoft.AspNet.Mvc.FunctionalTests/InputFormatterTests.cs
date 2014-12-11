@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -16,15 +13,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class InputFormatterTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("FormatterWebSite");
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-
         [Fact]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\"><SampleInt>"
@@ -48,8 +42,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsSelectedForJsonRequest(string requestContentType)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var sampleInputInt = 10;
             var input = "{\"SampleInt\":10}";
             var content = new StringContent(input, Encoding.UTF8, requestContentType);
@@ -80,8 +74,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var actionName = filterHandlesModelStateError ? "ActionFilterHandlesError" : "ActionHandlesError";
             var expectedSource = filterHandlesModelStateError ? "filter" : "action";
 
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var input = "{\"SampleInt\":10}";
             var content = new StringContent(input);
             content.Headers.Clear();
@@ -111,8 +105,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsModelStateValid_ForValidContentType(string requestContentType, string jsonInput, int expectedSampleIntValue)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
 
             // Act
@@ -131,8 +125,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsModelStateInvalid_ForEmptyContentType(string jsonInput)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, "application/json");
             content.Headers.Clear();
 
@@ -150,8 +144,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonInputFormatter_IsModelStateValid_ForTransferEncodingChunk(string requestContentType, string jsonInput, int expectedSampleIntValue)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
             client.DefaultRequestHeaders.TransferEncodingChunked = true;
 

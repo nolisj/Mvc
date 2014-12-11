@@ -1,15 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -17,9 +13,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class InputObjectValidationTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("FormatterWebSite");
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-
         // Parameters: Request Content, Expected status code, Expected model state error message
         public static IEnumerable<object[]> SimpleTypePropertiesModelRequestData
         {
@@ -46,8 +39,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserializedWithoutErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var sampleId = 2;
             var sampleName = "SampleUser";
             var sampleAlias = "SampleAlias";
@@ -73,8 +66,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserialized_WithErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var sampleId = 0;
             var sampleName = "user";
             var sampleAlias = "a";
@@ -100,8 +93,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedFieldsAreNotValidated()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
 
             // Act
@@ -117,8 +110,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ShallowValidation_HappensOnExcluded_ComplexTypeProperties()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var requestData = "{\"Name\":\"Library Manager\", \"Suppliers\": [{\"Name\":\"Contoso Corp\"}]}";
             var content = new StringContent(requestData, Encoding.UTF8, "application/json");
             var expectedModelStateErrorMessage 
@@ -150,8 +143,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                                             string expectedModelStateErrorMessage)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var content = new StringContent(requestContent, Encoding.UTF8, "application/json");
 
             // Act
@@ -172,8 +165,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedField_IsValidatedForNonBodyBoundModels()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
 
             // Act

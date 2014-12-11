@@ -1,25 +1,19 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class CompositeViewEngineTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(CompositeViewEngineWebSite));
-        private readonly Action<IApplicationBuilder> _app = new CompositeViewEngineWebSite.Startup().Configure;
-
         [Fact]
         public async Task CompositeViewEngine_FindsPartialViewsAcrossAllEngines()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(CompositeViewEngineWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/");
@@ -32,8 +26,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CompositeViewEngine_FindsViewsAcrossAllEngines()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(CompositeViewEngineWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync("http://localhost/Home/TestView");

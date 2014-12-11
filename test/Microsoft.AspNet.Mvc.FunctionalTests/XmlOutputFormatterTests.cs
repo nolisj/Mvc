@@ -14,20 +14,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class XmlOutputFormatterTests
     {
-        private readonly IServiceProvider _services;
-        private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
-
-        public XmlOutputFormatterTests()
-        {
-            _services = TestHelper.CreateServices("FormatterWebSite");
-        }
-
         [Fact]
         public async Task XmlDataContractSerializerOutputFormatterIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Home/GetDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
@@ -46,8 +38,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerOutputFormatterIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/XmlSerializer/GetDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
 
@@ -65,8 +57,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerFailsAndDataContractSerializerIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post,
                                                  "http://localhost/DataContractSerializer/GetPerson?name=HelloWorld");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
@@ -86,8 +78,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerOutputFormatter_WhenDerivedClassIsReturned()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post, "http://localhost/XmlSerializer/GetDerivedDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
@@ -107,8 +99,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlDataContractSerializerOutputFormatter_WhenDerivedClassIsReturned()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post, "http://localhost/Home/GetDerivedDummyClass?sampleInput=10");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));
@@ -128,8 +120,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task XmlSerializerFormatter_DoesNotWriteDictionaryObjects()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(FormatterWebSite));
+            var client = site.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post, "http://localhost/XmlSerializer/GetDictionary");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/xml;charset=utf-8"));

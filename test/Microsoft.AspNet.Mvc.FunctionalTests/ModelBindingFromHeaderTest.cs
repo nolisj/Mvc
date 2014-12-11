@@ -14,9 +14,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ModelBindingFromHeaderTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ModelBindingWebSite));
-        private readonly Action<IApplicationBuilder> _app = new ModelBindingWebSite.Startup().Configure;
-
         // The action that this test hits will echo back the model-bound value
         [Theory]
         [InlineData("transactionId", "1e331f25-0869-4c87-8a94-64e6e40cb5a0")]
@@ -27,8 +24,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = headerValue;
 
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ModelBindingWebSite));
+            var client = site.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringParameter");
             request.Headers.TryAddWithoutValidation(headerName, headerValue);
@@ -51,8 +48,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = "1e331f25-0869-4c87-8a94-64e6e40cb5a0";
 
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ModelBindingWebSite));
+            var client = site.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringParameter/CustomName");
             request.Headers.TryAddWithoutValidation("tId", "1e331f25-0869-4c87-8a94-64e6e40cb5a0");
@@ -79,8 +76,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = headerValue;
 
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ModelBindingWebSite));
+            var client = site.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringParameter");
             request.Headers.TryAddWithoutValidation(headerName, headerValue);
@@ -110,8 +107,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = headerValue.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ModelBindingWebSite));
+            var client = site.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToStringArrayParameter");
             request.Headers.TryAddWithoutValidation(headerName, headerValue);
@@ -138,8 +135,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var title = "How to make really really good soup.";
             var tags = new string[] { "Cooking", "Recipes", "Awesome" };
 
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ModelBindingWebSite));
+            var client = site.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Blog/BindToModel?author=Marvin");
 

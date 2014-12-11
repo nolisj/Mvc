@@ -1,26 +1,20 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ApplicationModelTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ApplicationModelWebSite));
-        private readonly Action<IApplicationBuilder> _app = new ApplicationModelWebSite.Startup().Configure;
-
         [Fact]
         public async Task ControllerModel_CustomizedWithAttribute()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ApplicationModelWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/CoolController/GetControllerName");
@@ -36,8 +30,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionModel_CustomizedWithAttribute()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ApplicationModelWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/ActionModel/ActionName");
@@ -53,8 +47,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ParameterModel_CustomizedWithAttribute()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ApplicationModelWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/ParameterModel/GetParameterIsOptional");

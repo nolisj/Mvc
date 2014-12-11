@@ -7,24 +7,18 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using ConnegWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ConnegTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(ConnegWebSite));
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-
         [Fact]
         public async Task ProducesContentAttribute_SingleContentType_PicksTheFirstSupportedFormatter()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
 
             // Selects custom even though it is last in the list.
             var expectedContentType = MediaTypeHeaderValue.Parse("application/custom;charset=utf-8");
@@ -43,8 +37,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ProducesContentAttribute_MultipleContentTypes_RunsConnegToSelectFormatter()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\r\n  \"Name\": \"My name\",\r\n  \"Address\": \"My address\"\r\n}";
 
@@ -61,8 +55,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoProducesContentAttribute_ActionReturningString_RunsUsingTextFormatter()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("text/plain;charset=utf-8");
             var expectedBody = "NormalController";
 
@@ -79,8 +73,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoProducesContentAttribute_ActionReturningAnyObject_RunsUsingDefaultFormatters()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
 
             // Act
@@ -94,8 +88,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoMatchingFormatter_ForTheGivenContentType_Returns406()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/Normal/ReturnUser_NoMatchingFormatter");
@@ -113,8 +107,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                                                                             string expectedResponseBody)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             expectedResponseBody = expectedResponseBody.Replace("#", Environment.NewLine);
 
             // Act
@@ -134,8 +128,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ProducesContentAttribute_OnAction_OverridesTheValueOnClass()
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
 
             // Value on the class is application/json.
             var expectedContentType = MediaTypeHeaderValue.Parse(
@@ -154,8 +148,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ProducesContentAttribute_OnDerivedClass_OverridesTheValueOnBaseClass()
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse(
                 "application/custom_ProducesContentOnClassController;charset=utf-8");
             var expectedBody = "ProducesContentOnClassController";
@@ -173,8 +167,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ProducesContentAttribute_OnDerivedAction_OverridesTheValueOnBaseClass()
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse(
                 "application/custom_NoProducesContentOnClassController_Action;charset=utf-8");
             var expectedBody = "NoProducesContentOnClassController";
@@ -191,8 +185,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [Fact]
         public async Task ProducesContentAttribute_OnDerivedAction_OverridesTheValueOnBaseAction()
         {
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse(
                 "application/custom_NoProducesContentOnClassController_Action;charset=utf-8");
             var expectedBody = "NoProducesContentOnClassController";
@@ -210,8 +204,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ProducesContentAttribute_OnDerivedClassAndAction_OverridesTheValueOnBaseClass()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse(
                 "application/custom_ProducesContentOnClassController_Action;charset=utf-8");
             var expectedBody = "ProducesContentOnClassController";
@@ -228,8 +222,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ProducesContentAttribute_IsNotHonored_ForJsonResult()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\"MethodName\":\"Produces_WithNonObjectResult\"}";
 
@@ -246,8 +240,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_UsesDefaultContentTypes_IfNoneAreAddedExplicitly()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\"MethodName\":\"ReturnJsonResult\"}";
 
@@ -264,8 +258,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_UsesExplicitContentTypeAndFormatter_IfAdded()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/custom-json;charset=utf-8");
             var expectedBody = "{ MethodName = ReturnJsonResult_WithCustomMediaType }";
 
@@ -282,8 +276,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_UsesDefaultJsonFormatter_IfNoMatchingFormatterIsFound()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "{\"MethodName\":\"ReturnJsonResult_WithCustomMediaType_NoFormatter\"}";
 
@@ -302,8 +296,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoMatchOn_RequestContentType_FallsBackOnTypeBasedMatch_MatchFound(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedBody = "1234";
             var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
@@ -327,8 +321,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoMatchOn_RequestContentType_SkipTypeMatchByAddingACustomFormatter(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
             var content = new StringContent("1234", Encoding.UTF8, "application/custom");
             var request = new HttpRequestMessage(HttpMethod.Post, targetUri);
@@ -346,8 +340,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoMatchOn_RequestContentType_FallsBackOnTypeBasedMatch_NoMatchFound_Returns406()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(ConnegWebSite));
+            var client = site.CreateClient();
             var targetUri = "http://localhost/FallbackOnTypeBasedMatch/FallbackGivesNoMatch/?input=1234";
             var content = new StringContent("1234", Encoding.UTF8, "application/custom");
             var request = new HttpRequestMessage(HttpMethod.Post, targetUri);

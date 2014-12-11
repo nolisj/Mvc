@@ -6,18 +6,12 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using BasicWebSite;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class TagHelpersTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("TagHelpersWebSite");
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
         // make the tests less verbose, we get a reference to the assembly with the resources and we
@@ -31,8 +25,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(TagHelpersWebSite));
+            var client = site.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
@@ -63,8 +57,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                        "",
                                        "",
                                        "<nested>nested-content</nested>");
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(TagHelpersWebSite));
+            var client = site.CreateClient();
 
             // Act
             var result = await client.GetStringAsync("http://localhost/Home/" + action);

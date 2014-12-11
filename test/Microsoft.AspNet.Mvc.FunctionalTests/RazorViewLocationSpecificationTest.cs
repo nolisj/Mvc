@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using RazorWebSite;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -13,8 +9,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class RazorViewLocationSpecificationTest
     {
         private const string BaseUrl = "http://localhost/ViewNameSpecification_Home/";
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("RazorWebSite");
-        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Theory]
         [InlineData("LayoutSpecifiedWithPartialPathInViewStart")]
@@ -27,8 +21,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 @"<layout>
 _ViewStart that specifies partial Layout
 </layout>";
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync(BaseUrl + action);
@@ -48,8 +42,8 @@ _ViewStart that specifies partial Layout
 @"<non-shared>
 Layout specified in page
 </non-shared>";
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync(BaseUrl + actionName);
@@ -67,8 +61,8 @@ Layout specified in page
 @"<non-shared>
 Page With Non Partial Layout
 </non-shared>";
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync(BaseUrl + actionName);
@@ -89,8 +83,8 @@ Page With Non Partial Layout
 Non Shared Partial
 
 </layout>";
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(RazorWebSite));
+            var client = site.CreateClient();
 
             // Act
             var body = await client.GetStringAsync(BaseUrl + actionName);

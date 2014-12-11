@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRender_ViewsWithLayout(string url)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // The K runtime compiles every file under compiler/resources as a resource at runtime with the same name
@@ -58,8 +58,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRender_SimpleViews()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync("compiler/resources/BasicWebSite.Home.PlainView.html");
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
@@ -78,8 +78,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanReturn_ResultsWithoutContent()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/Home/NoContentResult");
@@ -96,8 +96,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ReturningTaskFromAction_ProducesNoContentResult()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/Home/ActionReturningTask");
@@ -111,8 +111,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionDescriptors_CreatedOncePerRequest()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
 
             var expectedContent = "1";
 
@@ -131,8 +131,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionWithRequireHttps_RedirectsToSecureUrl_ForNonHttpsGetRequests()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.GetAsync("http://localhost/Home/HttpsOnlyAction");
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
             Assert.NotNull(response.Headers.Location);
-            Assert.Equal("https://localhost/Home/HttpsOnlyAction", response.Headers.Location.ToString());
+            Assert.Equal("https://" + site.Host + "/Home/HttpsOnlyAction", response.Headers.Location.ToString());
             Assert.Equal(0, response.Content.Headers.ContentLength);
 
             var responseBytes = await response.Content.ReadAsByteArrayAsync();
@@ -151,8 +151,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionWithRequireHttps_ReturnsBadRequestResponse_ForNonHttpsNonGetRequests()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = server.CreateClient();
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.SendAsync(new HttpRequestMessage(
@@ -167,14 +167,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(0, responseBytes.Length);
         }
 
-        [Theory]
+        [InMemoryTheory("Requires HTTPS")]
         [InlineData("GET")]
         [InlineData("POST")]
         public async Task ActionWithRequireHttps_AllowsHttpsRequests(string method)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = new HttpClient(server.CreateHandler(), false);
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
 
             // Act
             var response = await client.SendAsync(new HttpRequestMessage(
@@ -189,8 +189,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonViewComponent_RendersJson()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = new HttpClient(server.CreateHandler(), false);
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
+
             var expectedBody = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
             {
                 Id = 10,
@@ -198,7 +199,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             });
 
             // Act
-            var response = await client.GetAsync("https://localhost/Home/JsonTextInView");
+            var response = await client.GetAsync("http://localhost/Home/JsonTextInView");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -248,8 +249,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HtmlHelperLinkGeneration(string viewName, string expectedLink)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
-            var client = new HttpClient(server.CreateHandler(), false);
+            var site = TestWebSite.Create(nameof(BasicWebSite));
+            var client = site.CreateClient();
+
+            // Compensate for different base url if running on a real server.
+            expectedLink = expectedLink.Replace("localhost", site.Host);
 
             // Act
             var response = await client.GetAsync("http://localhost/Links/Index?view=" + viewName);
