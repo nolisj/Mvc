@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -71,6 +73,90 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(expected, result.Trim());
+        }
+
+        [Theory]
+        [InlineData("Create")]
+        public async Task ViewsWithModelMetadataAttributes_CanRender(string action)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/TagHelpersWebSite.Employee." + action + ".html");
+
+            // Act
+            var response = await client.GetAsync("http://localhost/Employee/" + action);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+            Assert.Equal(expectedContent, responseContent);
+        }
+
+        [Theory]
+        [InlineData("Create", "Index")]
+        public async Task ViewsWithModelMetadataAttributes_CanHandleValidPost(string postAction, string redirectAction)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/TagHelpersWebSite.Employee." + redirectAction + ".AfterCreate.html");
+            var validPostValues = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("FullName", "Boo"),
+                new KeyValuePair<string,string>("Gender", "M"),
+                new KeyValuePair<string,string>("Age", "22"),
+                new KeyValuePair<string,string>("EmployeeId", "0"),
+                new KeyValuePair<string,string>("JoinDate", "2014-12-01"),
+                new KeyValuePair<string,string>("Email", "a@b.com"),
+            };
+            var postContent = new FormUrlEncodedContent(validPostValues);
+
+            // Act
+            var postResponse = await client.PostAsync("http://localhost/Employee/" + postAction, postContent);
+            var response = await client.GetAsync("http://localhost/Employee/" + redirectAction);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, postResponse.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+            Assert.Equal(expectedContent, responseContent);
+        }
+
+        [Theory]
+        [InlineData("Create")]
+        public async Task ViewsWithModelMetadataAttributes_CanHandleInvalidPost(string action)
+        {
+            // Arrange
+            var server = TestServer.Create(_provider, _app);
+            var client = server.CreateClient();
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync(
+                "compiler/resources/TagHelpersWebSite.Employee." + action + ".Invalid.html");
+            var validPostValues = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("FullName", "Boo"),
+                new KeyValuePair<string,string>("Gender", "M"),
+                new KeyValuePair<string,string>("Age", "1000"),
+                new KeyValuePair<string,string>("EmployeeId", "0"),
+                new KeyValuePair<string,string>("Email", "a@b.com"),
+                new KeyValuePair<string,string>("Salary", "z"),
+            };
+            var postContent = new FormUrlEncodedContent(validPostValues);
+
+            // Act
+            var response = await client.PostAsync("http://localhost/Employee/" + action, postContent);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+            Assert.Equal(expectedContent, responseContent);
         }
     }
 }
